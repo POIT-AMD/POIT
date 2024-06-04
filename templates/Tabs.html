@@ -1,0 +1,362 @@
+<!doctype html>                                   
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>jQuery UI Tabs - Open on mouseover</title>
+    <link rel="stylesheet" href="static/jquery-ui.min.css">
+    <script src="static/jquery-3.2.1.min.js"></script>
+    <script src="static/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.5/socket.io.min.js"></script>
+    <script src="static/libs/plotly-latest.min.js"></script>
+    <script src="static/libs/gauge.min.js"></script>
+    
+      <script>
+      $( function() { $( "#tabs" ).tabs({ });} );     //event: "mouseover"    - doplnenie do { } pre elimináciu klikania na taby
+    </script>
+    <script type="text/javascript" charset="utf-8">
+      
+        $(document).ready(function () {
+          var namespace = '/test';
+          var socket;
+          
+          var x = new Array();
+          var y1= new Array();
+          var y2= new Array();
+          
+          var trace1;
+          var trace2;
+          
+          var layout;
+          
+          var gauge1;
+          var gauge2;
+          var gauge3;
+          
+          $('#connectbtn').click(function(event) {
+            
+            console.log("connected!");
+            
+            $('#con').html("Connected!");
+          
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            //socket.on('connect', function () {
+              //socket.emit('my_event', { data: 'I\'m connected!', value: 1 });
+            //});
+          
+          
+          
+          socket.on('my_response', function (msg) {
+                console.log(msg.BUT);
+                console.log(msg.POT1);
+                console.log(msg.POT2);
+                $('#log').append('CNT#: ' + msg.count + '   BUT: ' + msg.BUT + '   POT1: ' + msg.POT1 + '   POT2: ' + msg.POT2 + '<br>');
+                
+              
+              
+              if ($('#dirbut').val() == "right"){
+              servo = msg.POT2
+              }
+              else{
+              servo = msg.POT1
+              }
+                    
+                gauge1.value = msg.POT1;    
+                gauge2.value = servo;
+                gauge3.value = msg.POT2;
+
+            x.push(parseFloat(msg.count));
+            y1.push(parseFloat(msg.POT1));
+            y2.push(parseFloat(msg.POT2));
+            
+            trace1 = {
+              x: x,
+              y: y1,
+              mode: 'lines',
+              name: 'Potenciometer 1',
+            };
+            
+            trace2 = {
+              x: x,
+              y: y2,
+              mode: 'lines',
+              name: 'Potenciometer 2',
+            };
+            
+            layout = {
+              title: 'HODNOTY UHLOV NASTAVENÉ NA POTENCIOMETROCH',
+              xaxis: { title: 'ČAS [s]', },
+              yaxis: { title: 'UHOL [°]',    }
+            };
+            
+            var traces = [trace1,trace2];
+            //traces.push(trace);
+            Plotly.newPlot($('#plotdiv')[0], traces, layout);
+ 
+          });          
+          
+          });
+
+          
+
+          gauge1 = new RadialGauge({        
+                renderTo: 'canvasID1',
+                width: 300,
+                height: 300,
+                units: "Angle",
+                minValue: 0,
+                maxValue: 180,
+                majorTicks: [
+                    "0", "10", "20", "30", "40", "50", "60", "70", "80", "90",
+                    "100", "110", "120", "130", "140", "150", "160", "170", "180"
+                ],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: [{
+                    "from": 20,
+                    "to": 160,
+                    "color": "rgba(50, 200, 50, .75)"
+                }],
+                colorPlate: "#fff",
+                borderShadowWidth: 5,
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "linear"
+            });
+            
+            gauge1.draw();
+            
+
+          gauge2 = new RadialGauge({         //definícia ciferníku2
+                renderTo: 'canvasID2',
+                width: 300,
+                height: 300,
+                units: "Angle",
+                minValue: 0,
+                maxValue: 180,
+                majorTicks: [
+                    "0", "10", "20", "30", "40", "50", "60", "70", "80", "90",
+                    "100", "110", "120", "130", "140", "150", "160", "170", "180"
+                ],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: [{
+                    "from": 20,
+                    "to": 160,
+                    "color": "rgba(50, 200, 50, .75)"
+                }],
+                colorPlate: "#fff",
+                borderShadowWidth: 5,
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "linear"
+            });
+
+            gauge2.draw();
+            
+    
+          gauge3 = new RadialGauge({         //definícia ciferníku3
+                renderTo: 'canvasID3',
+                width: 300,
+                height: 300,
+                units: "Angle",
+                minValue: 0,
+                maxValue: 180,
+                majorTicks: [
+                    "0", "10", "20", "30", "40", "50", "60", "70", "80", "90",
+                    "100", "110", "120", "130", "140", "150", "160", "170", "180"
+                ],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: [{
+                    "from": 20,
+                    "to": 160,
+                    "color": "rgba(50, 200, 50, .75)"
+                }],
+                colorPlate: "#fff",
+                borderShadowWidth: 5,
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "linear"
+            });
+            
+            gauge3.draw();
+
+          
+
+          $('form#emit').submit(function (event) {
+            socket.emit('my_event', { value: $('#emit_value').val() });
+            return false;
+          });
+          
+          
+          $('#dirbut').click(function(event) {
+              console.log($('#dirbut').val());
+              
+              if ($(this).val() == "right") {
+                $(this).val("left");
+                $(this).text("LEFT");
+              } 
+              else {
+                $(this).val("right");
+                $(this).text("RIGHT");
+              }
+              socket.emit('rot_event', {value: $('#dirbut').val()});
+              return false; }); 
+              
+              
+          $('#serbut').click(function(event) {
+          socket.emit('set_servo', {value: servo});
+          return false; });
+          
+          
+          $('.button1').click(function(event) {
+          console.log($('.button1').val());
+          socket.emit('click_start', {value: $('.button1').val()});
+          return false; });
+          
+          $('.button2').click(function(event) {
+          console.log($('.button2').val());
+          socket.emit('click_stop', {value: $('.button2').val()});
+          return false; });
+          
+          
+          $('form#buttonVal').click(function (event) {
+            socket.emit('click_event', { value: $('#buttonVal').val() });
+            return false;
+          });
+          $('form#disconnect').submit(function (event) {
+            socket.emit('disconnect_request');
+            return false;
+          });
+        });
+        
+      </script>
+      
+      
+      
+  <style>
+    .centercif{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      }
+    </style>    
+      
+  <style>
+    .hspacecif{
+        margin-right:60px;
+      }
+    </style>  
+    
+  <style>
+    .hspaceciftext{
+        margin-right:200px;
+      }
+    </style>  
+    
+    
+  <style>
+    .container{
+        text-align: center;
+      }
+    </style>  
+      
+      
+      
+  </head>
+  <body>
+   
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-0">HOME</a></li>
+        <li><a href="#tabs-1">Numeric</a></li>
+        <li><a href="#tabs-2">Graph</a></li>
+        <li><a href="#tabs-3">Analog</a></li>
+      </ul>
+      
+       <div id="tabs-0">
+          <p>Andrej Marián Drugda ID: 128043</p>
+            <div class='container'><h1>HOME PAGE</h1></div>
+            <div class='container'><h2>web-server</h2></div>
+            
+            <h3 id="con"></h3>
+            <button id="connectbtn" type="submit">OPEN</button>
+            
+            <form id="disconnect" method="POST" action="#">
+                <input type="submit" value="disconnect">
+            </form>
+            
+            
+            <h2>SEND ANGLE:</h2>
+            
+            <form id="buttonVal" method="POST" action="#">
+                <input type="text" name="emit_value" id="emit_value" placeholder="Angle">
+                <input type="submit" value="send">
+            </form>
+            
+        </div>
+        
+        
+          
+      <div id="tabs-1">
+             <div class='container'><h1>MEASURED VALUES</h1></div>
+             
+            <button class="button1" type="submit" value="start">START</button>
+            <button class="button2" type="submit" value="stop">STOP</button>
+             
+            <h2>Receive:</h2>
+            <div id="log"></div>
+        </div>
+      
+      
+      <div id="tabs-2">  
+           <div class='container'><h1>DISPLAY GRAPHS</h1> 
+                 
+           <button class="button1" type="submit" value="start">START</button>
+           <button class="button2" type="submit" value="stop">STOP</button>
+           
+            <div id="plotdiv" style="width:1200px;height:500px;"></div>
+            </div> 
+        </div>
+      
+      <div id="tabs-3">
+          <div class='container'><h1>CIFERNÍKY</h1></div> 
+          <p><span class="hspacecif"></span></p>
+          
+          <button id="dirbut" type="submit" value="right">RIGHT</button>
+          
+          <button id="serbut" type="submit">SET</button>
+          
+          <h2> <span class="hspaceciftext"></span>
+              POTENCIOMETER 1 <span class="hspaceciftext"></span>
+                  SERVO <span class="hspaceciftext"></span> 
+              POTENCIOMETER 2</h2>
+          
+           <div class='centercif'> 
+            <canvas id="canvasID1"></canvas> <span class="hspacecif"></span> 
+            <canvas id="canvasID2"></canvas> <span class="hspacecif"></span> 
+            <canvas id="canvasID3"></canvas> 
+           </div>
+        </div>
+      
+      
+    </div>
+  </body>
+</html>
