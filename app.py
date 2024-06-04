@@ -44,7 +44,7 @@ def background_thread(args):
             ser = serial.Serial("/dev/ttyS0", 9600)
             time.sleep(1) 
             povol = 0
-            
+    #github skúška
         #die("diestring endit")
         #socketio.sleep(0.7)
         count += 1
