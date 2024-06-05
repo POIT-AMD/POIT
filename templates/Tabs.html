@@ -60,11 +60,17 @@
               else{
               servo = msg.POT1
               }
-                    
+              
+                gauge1.draw();
+                gauge2.draw();
+                gauge3.draw(); 
+                
                 gauge1.value = msg.POT1;    
                 gauge2.value = servo;
                 gauge3.value = msg.POT2;
-
+                
+               
+                
             x.push(parseFloat(msg.count));
             y1.push(parseFloat(msg.POT1));
             y2.push(parseFloat(msg.POT2));
@@ -129,8 +135,7 @@
                 animationRule: "linear"
             });
             
-            gauge1.draw();
-            
+          
 
           gauge2 = new RadialGauge({         //definícia ciferníku2
                 renderTo: 'canvasID2',
@@ -162,7 +167,7 @@
                 animationRule: "linear"
             });
 
-            gauge2.draw();
+           
             
     
           gauge3 = new RadialGauge({         //definícia ciferníku3
@@ -195,14 +200,11 @@
                 animationRule: "linear"
             });
             
-            gauge3.draw();
+           
 
           
 
-          $('form#emit').submit(function (event) {
-            socket.emit('my_event', { value: $('#emit_value').val() });
-            return false;
-          });
+      
           
           
           $('#dirbut').click(function(event) {
@@ -236,10 +238,12 @@
           return false; });
           
           
-          $('form#buttonVal').click(function (event) {
-            socket.emit('click_event', { value: $('#buttonVal').val() });
+          $('#buttonVal').click(function (event) {
+            socket.emit('click_event', { value: $('#emit_value').val() });
             return false;
           });
+          
+          
           $('form#disconnect').submit(function (event) {
             socket.emit('disconnect_request');
             return false;
@@ -306,10 +310,10 @@
             
             <h2>SEND ANGLE:</h2>
             
-            <form id="buttonVal" method="POST" action="#">
-                <input type="text" name="emit_value" id="emit_value" placeholder="Angle">
-                <input type="submit" value="send">
-            </form>
+            
+            <input type="number" min="0" max="180" id="emit_value" placeholder="Angle">
+            <button id="buttonVal" type="submit" value="send">SEND</button>
+          
             
         </div>
         

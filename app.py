@@ -44,7 +44,7 @@ def background_thread(args):
             ser = serial.Serial("/dev/ttyS0", 9600)
             time.sleep(1) 
             povol = 0
-    #github skúška
+ 
         #die("diestring endit")
         #socketio.sleep(0.7)
         count += 1
@@ -72,12 +72,15 @@ def background_thread(args):
 def index():
     return render_template('Tabs.html', async_mode=socketio.async_mode)
 
-@socketio.on('my_event', namespace='/test')
-def handle_my_event(message):   
-#    session['receive_count'] = session.get('receive_count', 0) + 1 
-    session['A'] = message['value']    
-#    emit('my_response',
-#         {'data': message['value'], 'count': session['receive_count']})
+@socketio.on('click_event', namespace='/test')
+def handle_angle_event(message):   
+    global ser
+    if ser:
+        ser.write(f"{message['value']}\n".encode())
+        time.sleep(2.2)
+    else:
+        print("Serial not defined")
+
  
  
 @socketio.on('click_start', namespace='/test')
@@ -98,19 +101,25 @@ def handle_event(message):
         if message['value'] == "right":
             print("Otočenie 180 stupnov")
             ser.write(f"{202}\n".encode()) 
-            time.sleep(2.2)
+            time.sleep(3)
         else:
             print("Otočenie 0 stupnov")
             ser.write(f"{204}\n".encode()) 
-            time.sleep(2.2)
+            time.sleep(3)
     else:
-        print("HAHA nejde to :P")    
+        print("Serial not defined")    
+    
     
 @socketio.on('set_servo', namespace='/test')
-def handle_servo(message):   
+def handle_servo(message):
     session['ser_value'] = message['value']
-
- 
+    global ser
+    if ser:
+        ser.write(f"{message['value']}\n".encode())
+        time.sleep(4)
+    else:
+        print("Serial not defined")
+        
  
 @socketio.on('disconnect_request', namespace='/test')
 def handle_disconnect_request():
