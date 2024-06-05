@@ -5,6 +5,7 @@ import time
 import random
 import serial
 import math
+import MySQLdb  
 
 async_mode = None
 
@@ -45,7 +46,6 @@ def background_thread(args):
             time.sleep(1) 
             povol = 0
  
-        #die("diestring endit")
         #socketio.sleep(0.7)
         count += 1
         
@@ -119,14 +119,17 @@ def handle_servo(message):
         time.sleep(4)
     else:
         print("Serial not defined")
-        
+    
+    
+
  
 @socketio.on('disconnect_request', namespace='/test')
 def handle_disconnect_request():
     emit('my_response', {'state': 'Disconnected!'})
+    disconnect()
     #session['receive_count'] = session.get('receive_count', 0) + 1
     #emit('my_response', {'data': 'Disconnected!', 'count': session['receive_count']})
-    disconnect()
+    
 
 
 

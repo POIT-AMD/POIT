@@ -31,40 +31,38 @@
           var gauge1;
           var gauge2;
           var gauge3;
+                    
           
           $('#connectbtn').click(function(event) {
-            
+    
             console.log("connected!");
             
             $('#con').html("Connected!");
           
             socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
-
-            //socket.on('connect', function () {
-              //socket.emit('my_event', { data: 'I\'m connected!', value: 1 });
-            //});
-          
+       
           
           
           socket.on('my_response', function (msg) {
                 console.log(msg.BUT);
                 console.log(msg.POT1);
                 console.log(msg.POT2);
-                $('#log').append('CNT#: ' + msg.count + '   BUT: ' + msg.BUT + '   POT1: ' + msg.POT1 + '   POT2: ' + msg.POT2 + '<br>');
-                
+                $('#log').append('CNT#:' + msg.count + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POTENCIOMETER 1:&nbsp;' + msg.POT1 + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POTENCIOMETER 2: ' + msg.POT2 + '<br>');
+                           
               
               
-              if ($('#dirbut').val() == "right"){
+              if ($('#dirbut').val() == "right" || msg.BUT == 0){
               servo = msg.POT2
               }
               else{
               servo = msg.POT1
               }
               
+                      
                 gauge1.draw();
                 gauge2.draw();
                 gauge3.draw(); 
-                
+          
                 gauge1.value = msg.POT1;    
                 gauge2.value = servo;
                 gauge3.value = msg.POT2;
@@ -101,7 +99,7 @@
  
           });          
           
-          });
+        });
 
           
 
@@ -167,8 +165,7 @@
                 animationRule: "linear"
             });
 
-           
-            
+
     
           gauge3 = new RadialGauge({         //definícia ciferníku3
                 renderTo: 'canvasID3',
@@ -199,12 +196,7 @@
                 animationDuration: 1500,
                 animationRule: "linear"
             });
-            
            
-
-          
-
-      
           
           
           $('#dirbut').click(function(event) {
@@ -246,6 +238,8 @@
           
           $('form#disconnect').submit(function (event) {
             socket.emit('disconnect_request');
+            console.log("disconected!");
+            $('#con').html("Disconected!");
             return false;
           });
         });
@@ -271,18 +265,117 @@
     
   <style>
     .hspaceciftext{
-        margin-right:200px;
+        margin-right:175px;
       }
     </style>  
     
-    
+  <style>
+    .hspacetitle{
+        margin-right:675px;
+      }
+    </style> 
+  
   <style>
     .container{
         text-align: center;
       }
     </style>  
+    
+    
+  <style>
+    #dirbut{
+        background-color: orange;
+        color: black;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    
+    #dirbut:hover{
+        background-color:yellow;
+    }
+      
+    </style>  
+    
+  <style>
+    #serbut{
+        background-color: green;
+        color: black;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    #serbut:hover{
+        background-color:lightgreen;
+    }
+    </style>  
       
       
+  <style>
+    .button1{
+        background-color: green;
+        color: white;
+        padding: 20px 5px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+    }
+    .button1:hover{
+        background-color:lightgreen;
+    }
+      
+    </style>  
+    
+    
+  <style>
+    .button2{
+        background-color: red;
+        color: white;
+        padding: 20px 8px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+    }
+    .button2:hover{
+        background-color:darkorange;
+    }
+      
+    </style>  
+    
+      
+  <style>
+    #connectbtn{
+        background-color: gray;
+        color: white;
+        padding: 10px 10px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    #connectbtn:hover{
+        background-color: green;
+    }
+      
+    </style>  
+      
+      
+      
+  <style>
+    .disconnect{
+        background-color: white;
+        color: white;
+        padding: 10px 10px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .diconnect:hover{
+        background-color:red;
+    }
+      
+    </style>  
       
   </head>
   <body>
@@ -293,18 +386,22 @@
         <li><a href="#tabs-1">Numeric</a></li>
         <li><a href="#tabs-2">Graph</a></li>
         <li><a href="#tabs-3">Analog</a></li>
+        <li><a href="#tabs-4">Storage</a></li>
       </ul>
       
        <div id="tabs-0">
-          <p>Andrej Marián Drugda ID: 128043</p>
+          <p>Andrej Marián Drugda ID: 128043 
+          <span class="hspacetitle"></span>
+          POIT - SKÚŠKOVÉ ZADANIE (Web-server)
+          </p>
+          
             <div class='container'><h1>HOME PAGE</h1></div>
-            <div class='container'><h2>web-server</h2></div>
             
             <h3 id="con"></h3>
             <button id="connectbtn" type="submit">OPEN</button>
             
             <form id="disconnect" method="POST" action="#">
-                <input type="submit" value="disconnect">
+                <input type="submit" value="CLOSE">
             </form>
             
             
@@ -320,19 +417,20 @@
         
           
       <div id="tabs-1">
-             <div class='container'><h1>MEASURED VALUES</h1></div>
-             
+            <div class='container'><h1>MEASURED VALUES</h1></div>
+            <p>&nbsp;&nbsp;[Measurement]</p> 
             <button class="button1" type="submit" value="start">START</button>
             <button class="button2" type="submit" value="stop">STOP</button>
              
             <h2>Receive:</h2>
             <div id="log"></div>
-        </div>
+      </div>
       
       
       <div id="tabs-2">  
-           <div class='container'><h1>DISPLAY GRAPHS</h1> 
-                 
+           <div class='container'><h1>GRAPHS</h1> 
+           
+           <p>[Measurement]</p>       
            <button class="button1" type="submit" value="start">START</button>
            <button class="button2" type="submit" value="stop">STOP</button>
            
@@ -341,25 +439,38 @@
         </div>
       
       <div id="tabs-3">
-          <div class='container'><h1>CIFERNÍKY</h1></div> 
-          <p><span class="hspacecif"></span></p>
+          <div class='container'><h1>GAUGES</h1></div> 
           
+          <div class='container'>
           <button id="dirbut" type="submit" value="right">RIGHT</button>
+          </div>
           
+          <div class='container'>
           <button id="serbut" type="submit">SET</button>
-          
-          <h2> <span class="hspaceciftext"></span>
-              POTENCIOMETER 1 <span class="hspaceciftext"></span>
+          </div> 
+           
+          <div class='container'>
+          <h2>POTENCIOMETER 1 <span class="hspaceciftext"></span>
                   SERVO <span class="hspaceciftext"></span> 
               POTENCIOMETER 2</h2>
-          
+          </div>
+           
            <div class='centercif'> 
             <canvas id="canvasID1"></canvas> <span class="hspacecif"></span> 
             <canvas id="canvasID2"></canvas> <span class="hspacecif"></span> 
             <canvas id="canvasID3"></canvas> 
            </div>
-        </div>
+       </div>
       
+       <div id="tabs-4">  
+           <div class='container'><h1>DATA STORAGE</h1> 
+           
+           <p>[Measurement]</p>       
+           <button class="stor" type="submit" value="write">WRITE</button>
+           <button class="restor" type="submit" value="read">READ</button>
+           
+            </div> 
+        </div>
       
     </div>
   </body>
