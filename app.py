@@ -5,7 +5,6 @@ import time
 import random
 import serial
 import math
-import MySQLdb  
 
 async_mode = None
 
@@ -17,20 +16,36 @@ socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock() 
 
+
+
 ser = None
+hodpot1 = None
+hodpot2 = None
+startcas = 0
+trvanie = 0
+indexcnt = 1
 
 #ser = serial.Serial("/dev/ttyS0", 9600)
  
- 
+def WRITEFILE(ADRES,DATA1,DATA2):
+    with open("static/files/Data_store.txt","a") as file:
+        file.write(f"{ADRES},{DATA1},{DATA2},\n")
+
 def background_thread(args):
     count = 0       
     dataList = [] 
-    povol = 1
     A = 'Null'
     btnV = 'Null'
     prep = 'Null'
     global ser
-            
+    global hodpot1
+    global hodpot2    
+    global cnt
+    global trvanie
+    startcas = time.time() 
+    povol = 1
+    
+    
     while True:
         print(args)
         
@@ -47,6 +62,7 @@ def background_thread(args):
             povol = 0
  
         #socketio.sleep(0.7)
+        trvanie = time.time() - startcas
         count += 1
         
         Uart = ser.readline().strip().decode('utf-8')
@@ -62,7 +78,7 @@ def background_thread(args):
             
         if(btnV == "start"):
             print(f"UART Data: {Uart}")
-            socketio.emit('my_response', {'BUT':but,'POT1': hodpot1, 'POT2':hodpot2, 'count': count}, namespace='/test')
+            socketio.emit('my_response', {'BUT':but,'POT1': hodpot1, 'POT2':hodpot2, 'count': int(trvanie)}, namespace='/test')
         else:
             time.sleep(0.1)
           
@@ -70,27 +86,52 @@ def background_thread(args):
             
 @app.route('/')
 def index():
-    return render_template('Tabs.html', async_mode=socketio.async_mode)
+    return render_template('index.html', async_mode=socketio.async_mode)
 
 @socketio.on('click_event', namespace='/test')
 def handle_angle_event(message):   
     global ser
     if ser:
         ser.write(f"{message['value']}\n".encode())
-        time.sleep(2.2)
+        time.sleep(1)
     else:
         print("Serial not defined")
 
  
  
 @socketio.on('click_start', namespace='/test')
-def handle_start(message):   
+def handle_start(message):
     session['btn_value'] = message['value'] 
+
 
 @socketio.on('click_stop', namespace='/test')
 def handle_stop(message):   
     session['btn_value'] = message['value']   
+
     
+@socketio.on('save_event',namespace='/test')
+def handle_write2file():
+    global hodpot1
+    global hodpot2
+    global indexcnt
+    
+    WRITEFILE(indexcnt,hodpot1,hodpot2)  
+    indexcnt+=1
+    return "done"  
+    # val = [indexcnt,hodpot1,hodpot2]    
+    # fo = open("static/files/Data_store.txt","a+")    
+    # fo.write("%s\r\n" %val)
+    
+    
+    
+@socketio.on('disp_event',namespace='/test')
+def handle_graph():
+    fo = open("static/files/Data_store.txt","r")
+    rows = fo.readlines()   
+    print(rows) 
+    emit('my_data', {'DATA':rows})
+    
+
     
     
 @socketio.on('rot_event', namespace='/test')
@@ -101,11 +142,11 @@ def handle_event(message):
         if message['value'] == "right":
             print("Otočenie 180 stupnov")
             ser.write(f"{202}\n".encode()) 
-            time.sleep(3)
+            time.sleep(1)
         else:
             print("Otočenie 0 stupnov")
             ser.write(f"{204}\n".encode()) 
-            time.sleep(3)
+            time.sleep(1)
     else:
         print("Serial not defined")    
     
@@ -125,8 +166,8 @@ def handle_servo(message):
  
 @socketio.on('disconnect_request', namespace='/test')
 def handle_disconnect_request():
-    emit('my_response', {'state': 'Disconnected!'})
-    disconnect()
+    disconnect() 
+    #emit('my_response', {'state': 'Disconnected!'})
     #session['receive_count'] = session.get('receive_count', 0) + 1
     #emit('my_response', {'data': 'Disconnected!', 'count': session['receive_count']})
     

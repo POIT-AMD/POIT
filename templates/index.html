@@ -1,0 +1,539 @@
+<!doctype html>                                   
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>POIT-WEB</title>
+    <link rel="stylesheet" href="static/jquery-ui.min.css">
+    <script src="static/jquery-3.2.1.min.js"></script>
+    <script src="static/libs/jquery-1.11.1.min.js"></script>
+    <script src="static/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.5/socket.io.min.js"></script>
+    <script src="static/libs/plotly-latest.min.js"></script>
+    <script src="static/libs/gauge.min.js"></script>
+    
+      <script>
+      $( function() { $( "#tabs" ).tabs({ });} );     //event: "mouseover"    - doplnenie do { } pre elimináciu klikania na taby
+    </script>
+    <script type="text/javascript" charset="utf-8">
+      
+        $(document).ready(function () {
+          var namespace = '/test';
+          var socket;
+          
+          var x = new Array();
+          var y1= new Array();
+          var y2= new Array();
+          
+          var trace1;
+          var trace2;
+          
+          var layout;
+          
+          var gauge1;
+          var gauge2;
+          var gauge3;
+          
+          var datnum;
+          var data = [];
+          var adres = [];
+          var data1 = [];
+          var data2 = [];
+           
+          
+          
+          $('#connectbtn').click(function(event) {
+    
+            console.log("connected!");
+            
+            $('#con').html("Connected!");
+          
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+       
+          //socket.on('my_data', function (msg) {
+                
+                //console.log(msg.DATA);
+                
+                //delicka = msg.DATA.split(",");
+                
+                //adres = delicka[0];
+                //data1 = delicka[1];
+                //data2 = delicka[2];
+                
+                //$('#log1').append('STORAGE DATA:' + adres + '<br>'); 
+          //});
+                    
+          
+          
+          socket.on('my_data', function(msg) {
+              console.log(msg.DATA);
+              
+              data = msg.DATA; 
+              $('#log1').append('&nbsp;&nbsp;INX&nbsp;&nbsp;&nbsp;&nbsp;POT1&nbsp;&nbsp;PO2' + '<br>'+'---------------------------'  + '<br>'); 
+              for (var i = 0; i < data.length; i++) {
+                datnum = data[i].split(",");
+                console.log(datnum[i]);
+                adres[i] = datnum[0]; 
+                data1[i] = datnum[1];
+                data2[i] = datnum[2];
+              $('#log1').append('|&nbsp;&nbsp;&nbsp;&nbsp;' + adres[i] + '&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;' + data1[i] + '&nbsp;&nbsp;|&nbsp;&nbsp;' + data2[i] + '&nbsp;&nbsp;|' + '<br>');   
+              }
+            
+              $('#log1').append('----------------------------'+'<br>');
+              
+              
+          });
+
+        
+          
+          socket.on('my_response', function (msg) {
+                console.log(msg.BUT);
+                console.log(msg.POT1);
+                console.log(msg.POT2);
+                $('#log').append('TIME#:' + msg.count + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POTENCIOMETER 1:&nbsp;' + msg.POT1 + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POTENCIOMETER 2: ' + msg.POT2 + '<br>');
+               
+          
+         
+            
+              if ($('#dirbut').val() == "right" || msg.BUT == '0'){
+              servo = msg.POT2
+              }
+              else{
+              servo = msg.POT1
+              }
+            
+              
+              if(servo < 180 && servo > 0){
+                gauge1.value = msg.POT1;    
+                gauge2.value = servo;
+                gauge3.value = msg.POT2; 
+                
+                gauge1.draw();
+                gauge2.draw();
+                gauge3.draw(); 
+              }  
+               
+                
+            x.push(parseFloat(msg.count));
+            y1.push(parseFloat(msg.POT1));
+            y2.push(parseFloat(msg.POT2));
+            
+            trace1 = {
+              x: x,
+              y: y1,
+              mode: 'lines',
+              name: 'Potenciometer 1',
+            };
+            
+            trace2 = {
+              x: x,
+              y: y2,
+              mode: 'lines',
+              name: 'Potenciometer 2',
+            };
+            
+            layout = {
+              title: 'VALUES SETS ON POTENTIOMETERS',
+              xaxis: { title: 'TIME [s]', },
+              yaxis: { title: 'ANGLE [°]', range: [0,200], dtick:10 }
+            };
+            
+            
+            var traces = [trace1,trace2];
+            //traces.push(trace);
+            Plotly.newPlot($('#plotdiv')[0], traces, layout);
+ 
+          });   
+          
+        });
+
+          
+
+          gauge1 = new RadialGauge({        
+                renderTo: 'canvasID1',
+                width: 300,
+                height: 300,
+                units: "Angle",
+                minValue: 0,
+                maxValue: 180,
+                majorTicks: [
+                    "0", "10", "20", "30", "40", "50", "60", "70", "80", "90",
+                    "100", "110", "120", "130", "140", "150", "160", "170", "180"
+                ],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: [{
+                    "from": 20,
+                    "to": 160,
+                    "color": "rgba(50, 200, 50, .75)"
+                }],
+                colorPlate: "#fff",
+                borderShadowWidth: 5,
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "linear"
+            });
+            
+          
+
+          gauge2 = new RadialGauge({         //definícia ciferníku2
+                renderTo: 'canvasID2',
+                width: 300,
+                height: 300,
+                units: "Angle",
+                minValue: 0,
+                maxValue: 180,
+                majorTicks: [
+                    "0", "10", "20", "30", "40", "50", "60", "70", "80", "90",
+                    "100", "110", "120", "130", "140", "150", "160", "170", "180"
+                ],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: [{
+                    "from": 20,
+                    "to": 160,
+                    "color": "rgba(50, 200, 50, .75)"
+                }],
+                colorPlate: "#fff",
+                borderShadowWidth: 5,
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "linear"
+            });
+
+
+    
+          gauge3 = new RadialGauge({         //definícia ciferníku3
+                renderTo: 'canvasID3',
+                width: 300,
+                height: 300,
+                units: "Angle",
+                minValue: 0,
+                maxValue: 180,
+                majorTicks: [
+                    "0", "10", "20", "30", "40", "50", "60", "70", "80", "90",
+                    "100", "110", "120", "130", "140", "150", "160", "170", "180"
+                ],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: [{
+                    "from": 20,
+                    "to": 160,
+                    "color": "rgba(50, 200, 50, .75)"
+                }],
+                colorPlate: "#fff",
+                borderShadowWidth: 5,
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "linear"
+            });
+           
+          
+          $('#dirbut').click(function(event) {
+              console.log($('#dirbut').val());
+              
+              if ($(this).val() == "right") {
+                $(this).val("left");
+                $(this).text("LEFT");
+              } 
+              else {
+                $(this).val("right");
+                $(this).text("RIGHT");
+              }
+              socket.emit('rot_event', {value: $('#dirbut').val()});
+              return false; }); 
+              
+              
+          $('#serbut').click(function(event) {
+          socket.emit('set_servo', {value: servo});
+          return false; });
+          
+          
+          $('.button1').click(function(event) {
+          console.log($('.button1').val());
+          socket.emit('click_start', {value: $('.button1').val()});
+          return false; });
+          
+          $('.button2').click(function(event) {
+          console.log($('.button2').val());
+          socket.emit('click_stop', {value: $('.button2').val()});
+          return false; });
+          
+          
+          $('#buttonVal').click(function (event) {
+            if($('#emit_value').val() < 180 && $('#emit_value').val() > 0){
+            socket.emit('click_event', { value: $('#emit_value').val() });
+            }else {alert("NON CORRECT ANGLE");}
+            return false;
+          });
+          
+          $('#store').click(function (event) {
+            socket.emit('save_event');
+            return false;
+          });
+          
+          $('#restore').click(function (event) {
+            socket.emit('disp_event');
+            return false;
+          });
+          
+          
+          $('form#disconnect').submit(function (event) {
+            socket.emit('disconnect_request');
+            console.log("disconected!");
+            $('#con').html("Disconected!");
+            return false;
+          });
+        });
+        
+      </script>
+      
+      
+      
+  <style>
+    .centercif{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      }
+    </style>    
+      
+  <style>
+    .hspacecif{
+        margin-right:60px;
+      }
+    </style>  
+    
+  <style>
+    .hspaceciftext{
+        margin-right:200px;
+      }
+    </style>  
+    
+  <style>
+    .hspacetitle{
+        margin-right:675px;
+      }
+    </style> 
+  
+  <style>
+    .container{
+        text-align: center;
+      }
+    </style>  
+    
+    
+  <style>
+    #dirbut{
+        background-color: orange;
+        color: black;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    
+    #dirbut:hover{
+        background-color:yellow;
+    }
+      
+    </style>  
+    
+  <style>
+    #serbut{
+        background-color: green;
+        color: black;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    #serbut:hover{
+        background-color:lightgreen;
+    }
+    </style>  
+      
+      
+  <style>
+    .button1{
+        background-color: green;
+        color: white;
+        padding: 7px 10px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+    }
+    .button1:hover{
+        background-color:lightgreen;
+    }
+      
+    </style>  
+    
+    
+  <style>
+    .button2{
+        background-color: red;
+        color: white;
+        padding: 7px 13px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+    }
+    .button2:hover{
+        background-color:darkorange;
+    }
+      
+    </style>  
+    
+
+      
+  <style>
+    #connectbtn{
+        background-color: green;
+        color: white;
+        padding: 5px 12px;
+        border: none;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    #connectbtn:hover{
+        background-color: lightgreen;
+        color: black;
+    }
+      
+    </style>  
+      
+      
+      
+  <style>
+    .disconnect{
+        background-color: red;
+        color: red;
+        padding: 10px 10px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .diconnect:hover{
+        background-color:red;
+    }
+      
+    </style>  
+      
+  </head>
+  <body>
+   
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-0">HOME</a></li>
+        <li><a href="#tabs-1">Numeric</a></li>
+        <li><a href="#tabs-2">Graph</a></li>
+        <li><a href="#tabs-3">Analog</a></li>
+        <li><a href="#tabs-4">Storage</a></li>
+      </ul>
+      
+       <div id="tabs-0">
+          <p>Andrej Marián Drugda ID: 128043 
+          <span class="hspacetitle"></span>
+          POIT - SKÚŠKOVÉ ZADANIE (Web-server)
+          </p>
+          
+            <div class='container'><h1>HOME PAGE</h1></div>
+            
+            <h3 id="con"></h3>
+            <button id="connectbtn" type="submit">OPEN</button>
+            
+            <form id="disconnect" method="POST" action="#">
+                <input type="submit" value="CLOSE">
+            </form>
+            
+            
+            <h2>SEND ANGLE:</h2>
+            
+            
+            <input type="number" min="0" max="180" id="emit_value" placeholder="Angle">
+            <button id="buttonVal" type="submit" value="send">SEND</button>
+          
+            
+        </div>
+        
+        
+          
+      <div id="tabs-1">
+            <div class='container'><h1>MEASURED VALUES</h1></div>
+            <p>&nbsp;&nbsp;[Measurement]</p> 
+            <button class="button1" type="submit" value="start">START</button>
+            <button class="button2" type="submit" value="stop">STOP</button>
+             
+            <h2>Receive:</h2>
+            <div id="log"></div>
+      </div>
+      
+      
+      <div id="tabs-2">  
+           <div class='container'><h1>GRAPHS</h1> 
+           
+           <p>[Measurement]</p>       
+           <button class="button1" type="submit" value="start">START</button>
+           <button class="button2" type="submit" value="stop">STOP</button>
+           
+            <div id="plotdiv" style="width:1200px;height:450px;"></div>
+            </div> 
+        </div>
+      
+      <div id="tabs-3">
+          <div class='container'><h1>GAUGES</h1></div> 
+          
+          <div class='container'>
+          <button id="dirbut" type="submit" value="right">RIGHT</button>
+          </div>
+          
+          <div class='container'>
+          <button id="serbut" type="submit">SET</button>
+          </div> 
+           
+          <div class='container'>
+          <h2>POTENCIOMETER 1 <span class="hspaceciftext"></span>
+                  SERVO <span class="hspaceciftext"></span> 
+              POTENCIOMETER 2</h2>
+          </div>
+           
+           <div class='centercif'> 
+            <canvas id="canvasID1"></canvas> <span class="hspacecif"></span> 
+            <canvas id="canvasID2"></canvas> <span class="hspacecif"></span> 
+            <canvas id="canvasID3"></canvas> 
+           </div>
+       </div>
+      
+       <div id="tabs-4">  
+           <div class='container'><h1>DATA STORAGE</h1> 
+            
+           <button id="store" type="submit" value="write">WRITE</button>
+           
+           <button id="restore" type="submit" value="read">READ</button>
+           
+           </div> 
+            <div class='container'> <h2>TABLE WRITE</h2></div>
+           <div class='container'>
+           <div id="log1"></div>
+           </div>
+       </div>
+      
+    </div>
+  </body>
+</html>
